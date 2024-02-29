@@ -1,0 +1,9 @@
+*.parquet
+*.csv
+*.log*
+.venv/*
+__pycache__/*
+*.txt
+*.pkl
+*.db
+/cache/*

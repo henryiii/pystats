@@ -1,0 +1,39 @@
+This works like this:
+
+## Step 1: download all index parquet files
+
+You can download them with:
+
+```console
+curl -L --remote-name-all $(curl -L "https://github.com/pypi-data/data/raw/main/links/dataset.txt")
+```
+
+Now you'll have `index-*.parquet` files.
+
+## Step 2: produce latest pyproject csv's
+
+You can use `pyproject-latest-to-csv.py` to produce `extract-pyproject-latest.csv`. This gets the latest versions of pyproject.toml file metadata.
+
+```console
+python pyproject-latest-to-csv.py
+```
+
+## Step 3: Download pyproject.tomls
+
+This is the "hard" step; you have to process a lot of GitHub requests. Use `pyproject-download.py` to produce `pyproject_contents.db`. It will reuse an existing one if possible.
+
+```console
+python pyproject-download.py
+```
+
+## Step 4: Produce the latest version pickle
+
+This file is slow to load (due to needing to parse all the TOML's), so we make a `.pkl` file of the parsed contents. We also make sure we only have the latest versions, since multiple runs of step 3 could produce newer versions.
+
+```console
+python db_to_pickle.py
+```
+
+## Step 5: Run your queries!
+
+Now you can use `compute_tool.py`/`compute_tools.py` to run queries over the data.

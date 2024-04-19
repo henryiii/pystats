@@ -48,4 +48,3 @@ SELECT ip.repository, ip.project_name, ip.project_version, lpv.nb_uploads,
 
 res = duckdb.sql(LATEST_QUERY)
 res.to_csv("extract-pyproject-latest.csv", header=True)
-

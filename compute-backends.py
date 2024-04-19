@@ -7,6 +7,7 @@ from collections import Counter
 from typing import Any
 from pathlib import Path
 
+
 def get_tomls_cached(db: str) -> Generator[tuple[str, str, dict[str, Any]], None, None]:
     pkl = Path(f"{db}.pkl")
     with pkl.open("rb") as f:
@@ -28,6 +29,7 @@ def main():
         print(f"{i:3} {k}: {v}")
 
     print(f"total: {counter.total()}")
+
 
 if __name__ == "__main__":
     main()

@@ -73,7 +73,10 @@ async def get_data(
 
 
 async def worker(
-    iterator: Iterator[str], session: aiohttp.ClientSession, cursor: sqlite3.Cursor, thread: int
+    iterator: Iterator[str],
+    session: aiohttp.ClientSession,
+    cursor: sqlite3.Cursor,
+    thread: int,
 ) -> None:
     with contextlib.suppress(StopIteration):
         for i in itertools.count(0):

@@ -27,5 +27,7 @@ FROM
   latest_dates
 WHERE
   row_num = 1
+ORDER BY
+  download_count
 ) TO 'extract-filecount-latest.csv' (HEADER);
 

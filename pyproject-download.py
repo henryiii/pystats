@@ -131,7 +131,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 
     end_time = time.time()
-    duration_msg = f"Getting files took : {end_time - start_time:0.3} seconds."
+    duration_msg = f"Getting files took: {end_time - start_time:0.3} seconds."
 
     LOG.info(duration_msg)
     print(duration_msg)

@@ -86,12 +86,11 @@ def main(tool: str, get_contents: Contents, level: int = 0) -> None:
 
 
 def blame(tool: str, string: str, contents: Contents) -> None:
-    assert args.contents != Contents.Values
     if string and contents == Contents.Reprs:
         print(tool, "=", string)
-    if string and contents == Contents.Lengths:
+    elif string and contents == Contents.Lengths:
         print(tool, "=", string, "chars")
-    if string and contents == Contents.Lines:
+    elif string and contents == Contents.Lines:
         print(tool, "=", string, "lines")
     else:
         print(tool, "= ...")
@@ -100,9 +99,9 @@ def blame(tool: str, string: str, contents: Contents) -> None:
         item = dig(toml, *tool.split(".")) if tool else toml
         if not string and item:
             print(name, version, "=", repr(item))
-        elif contents == Contents.Reprs and len(item) == int(string):
+        elif contents == Contents.Lengths and len(item) == int(string):
             print(name, version)
-        elif contents == Contents.Lengths and repr(item) == string:
+        elif contents == Contents.Reprs and repr(item) == string:
             print(name, version)
         elif (
             contents == Contents.Lines

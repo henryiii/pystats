@@ -26,7 +26,10 @@ def get_tomls(db: str) -> Generator[tuple[str, str, dict[str, Any]], None, None]
         vals = cursor.execute(CMD)
         for x in groupby(vals.fetchall(), key=lambda x: x[0]):
             project_name, group = x
-            _, project_version, contents = max(group, key=lambda x: version(x[0]))
+            group = list(group)
+            _, project_version, contents = max(group, key=lambda x: version(x[1]))
+            if project_name == "cmake":
+                print("Example: cmake", project_version, [x[1] for x in group])
             with contextlib.suppress(tomllib.TOMLDecodeError):
                 yield project_name, project_version, tomllib.loads(contents)
 

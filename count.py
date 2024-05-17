@@ -61,13 +61,14 @@ for p in myp:
 print(f"Total monthly downloads: {sum(x[1] for x in myp.values())//1000000:}M")
 
 
-for item in ["skbuild", "meson", "maturin"]:
-    print("\n---\n")
-    print(item)
-
+for item in ["skbuild", "meson", "maturin", "hatchling"]:
     with open(f"{item}_proj.txt") as f:
         pkgs = [x.split()[0].lower().replace(".", "-").replace("_", "-") for x in f][1:]
 
     myp = {k: v for k, v in projs.items() if k in pkgs}
+
+    print("\n---\n")
+    print(item, len(myp), "total packages in the top 8,000")
+
     for p in myp:
         print(f"#{myp[p][0]:<4}", f"{p:20}", f"{myp[p][1]:,}")

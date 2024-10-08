@@ -21,7 +21,6 @@ import time
 from collections.abc import Iterator
 
 import aiohttp
-from packaging.version import Version
 
 LOG = logging.getLogger(__name__)
 

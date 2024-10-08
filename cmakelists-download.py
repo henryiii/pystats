@@ -84,7 +84,9 @@ async def worker(
                 LOG.info("PROGRESS %d: %d", thread, i)
             line = next(iterator)
             with cursor.connection:
-                result = cursor.execute(GET_CONTENTS, (line["project_name"], line["path"]))
+                result = cursor.execute(
+                    GET_CONTENTS, (line["project_name"], line["path"])
+                )
                 if any(v[0] == line["project_version"] for v in result.fetchall()):
                     continue
 

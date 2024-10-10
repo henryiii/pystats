@@ -1,5 +1,5 @@
 # /// script
-# dependencies = ["requests"]
+# dependencies = ["requests", "rich"]
 # ///
 
 import requests
@@ -8,13 +8,16 @@ from pathlib import Path
 import argparse
 from typing import Any
 from collections.abc import Generator
+import rich.progress
 
 def get_json(filelist: Path) -> Generator[Any]:
     with filelist.open(encoding="utf-8") as f:
-        for line in f:
-            proj = line.strip()
-            yield requests.get(f"https://pypi.org/pypi/{proj}/json").json()
-             
+        lines = f.readlines()
+
+    for line in rich.progress.track(lines, description=f"Processing {filelist} with PyPI"):
+        proj = line.strip()
+        yield requests.get(f"https://pypi.org/pypi/{proj}/json").json()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

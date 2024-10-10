@@ -6,3 +6,9 @@ uv run pyready.py myproj.txt --output myproj.json
 # Process json info into readyness info
 uv run pymodel.py myproj.json
 ```
+
+You can get a list of the top packages from the parent folder with:
+
+```bash
+jq -r '.rows[:360] | .[] | .project' top-pypi-packages-30-days.min.json > pyready/top360.txt
+```

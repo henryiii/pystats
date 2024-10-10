@@ -3,7 +3,7 @@
 *.log*
 .venv/*
 __pycache__/*
-*.txt
+/*.txt
 *.pkl
 *.db
 /cache/*

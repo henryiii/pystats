@@ -11,6 +11,7 @@ import typing
 import enum
 from collections.abc import Generator
 import collections
+import argparse
 
 
 class Info(pydantic.BaseModel):
@@ -103,7 +104,15 @@ def display(res: ProjectList) -> Generator[None]:
         print(f"  {clsfr}: {total}")
 
 
-txt = Path("myproj.json").read_text()
-lst = json.loads(txt)
-res = ProjectList.model_validate_json(txt, strict=True)
-display(res)
+def main(path: Path):
+    txt = path.read_text()
+    lst = json.loads(txt)
+    res = ProjectList.model_validate_json(txt, strict=True)
+    display(res)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("requestdata", type=Path)
+    args = parser.parse_args()
+    main(args.requestdata)

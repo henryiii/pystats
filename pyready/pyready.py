@@ -5,55 +5,24 @@
 import requests
 import json
 from pathlib import Path
+import argparse
+from typing import Any
+from collections.abc import Generator
 
-my = {
-    "awkward",
-    "awkward-cpp",
-    "boost-histogram",
-    "build",
-    "cabinetry",
-    "check-sdist",
-    "cibuildwheel",
-    "cmake",
-    "cython-cmake",
-    "decaylanguage",
-    "f2py-cmake",
-    "flake8-errmsg",
-    "goofit",
-    "hepunits",
-    "hist",
-    "histoprint",
-    "iminuit",
-    "meson-python",
-    "mplhep",
-    "ninja",
-    "nox",
-    "particle",
-    "pipx",
-    "plumbum",
-    "pybind11",
-    "pybind11-global",
-    "pyhepmc",
-    "pyhf",
-    "pylhe",
-    "pyproject-metadata",
-    "repo-review",
-    "resample",
-    "scikit-build",
-    "scikit-build-core",
-    "scikit-hep",
-    "sp-repo-review",
-    "sphinxcontrib-moderncmakedomain",
-    "uhi",
-    "uproot",
-    "uproot-browser",
-    "validate-pyproject",
-    "validate-pyproject-schema-store",
-    "vector",
-}
+def get_json(filelist: Path) -> Generator[Any]:
+    with filelist.open(encoding="utf-8") as f:
+        for line in f:
+            proj = line.strip()
+            yield requests.get(f"https://pypi.org/pypi/{proj}/json").json()
+             
 
-projs = [
-    requests.get(f"https://pypi.org/pypi/{proj}/json").json() for proj in sorted(my)
-]
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filelist", type=Path)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
 
-Path("myproj.json").write_text(json.dumps(projs))
+    with args.output.open("w", encoding="utf-8") as f:
+        json.dump(list(get_json(args.filelist)), f)
+
+

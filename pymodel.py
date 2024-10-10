@@ -1,16 +1,18 @@
 # /// script
-# dependencies = ["pydantic", "rich"]
+# dependencies = ["pydantic", "rich", "requests"]
+# requires-python = ">=3.13"
 # ///
 
 import pydantic
 from pathlib import Path
 import json
 from rich import print
+import typing
+import enum
+from collections.abc import Generator
 
 
 class Info(pydantic.BaseModel):
-    model_config = pydantic.ConfigDict(strict=True)
-
     name: str
     classifiers: list[str]
     version: str
@@ -18,14 +20,10 @@ class Info(pydantic.BaseModel):
 
 
 class Release(pydantic.BaseModel):
-    model_config = pydantic.ConfigDict(strict=True)
-
     filename: str
 
 
 class Project(pydantic.BaseModel):
-    model_config = pydantic.ConfigDict(strict=True)
-
     info: Info
     releases: dict[str, list[Release]]
 
@@ -34,29 +32,59 @@ class ProjectList(pydantic.RootModel):
     root: list[Project]
 
 
+class Status(enum.Enum):
+    Wheel = enum.auto()
+    Classifier = enum.auto()
+    NoWheel = enum.auto()
+    NoClassifier = enum.auto()
+    Unknown = enum.auto()
+
+
+def get_classifiers(proj: Project) -> list[str]:
+    versions = (c.split()[-1] for c in proj.info.classifiers if "Python :: 3." in c)
+    return sorted(versions, key=lambda v: [int(d) for d in v.split(".")])
+
+
+def get_status(proj: Project) -> Status:
+    if [r.filename for r in proj.releases[proj.info.version] if "313" in r.filename]:
+        return Status.Wheel
+
+    classifiers = get_classifiers(proj)
+
+    if "3.13" in classifiers:
+        return Status.Classifier
+
+    if [r.filename for r in proj.releases[proj.info.version] if "312" in r.filename]:
+        return Status.NoWheel
+
+    if classifiers:
+        return Status.NoClassifier
+
+    return Status.Unknown
+
+
+def display(res: ProjectList) -> Generator[None]:
+    for proj in res.root:
+        print(f"[bold]{proj.info.name}", end=" ")
+        match get_status(proj):
+            case Status.Wheel:
+                print("[green]Yes Wheels", end=" ")
+            case Status.Classifier:
+                print("[green]Yes", end=" ")
+            case Status.NoWheel:
+                print("[red bold]Needs wheels!", end=" ")
+            case Status.NoClassifier:
+                classifiers = get_classifiers(proj)
+                print(f"[red]No ({classifiers[-1]})", end=" ")
+            case Status.Unknown:
+                pass
+            case never:
+                typing.assert_never(never)
+
+        print(f"[yellow]{proj.info.requires_python}")
+
+
 txt = Path("myproj.json").read_text()
 lst = json.loads(txt)
-res = ProjectList.model_validate_json(txt)
-
-for proj in res.root:
-    has_new = bool([c for c in proj.info.classifiers if "3.13" in c])
-    has_old = bool([c for c in proj.info.classifiers if "3.12" in c])
-    has_wheel = bool(
-        [r.filename for r in proj.releases[proj.info.version] if "313" in r.filename]
-    )
-    old_wheel = bool(
-        [r.filename for r in proj.releases[proj.info.version] if "312" in r.filename]
-    )
-
-    print(f"[bold]{proj.info.name}", end=" ")
-    if has_new:
-        print("[green]Yes", end=" ")
-    if has_wheel:
-        print("[green]Wheels", end=" ")
-    elif old_wheel:
-        print("[red bold]Needs wheels!", end=" ")
-
-    if has_old and not has_new and not has_wheel:
-        print("[red]No", end=" ")
-
-    print(f"[yellow]{proj.info.requires_python}")
+res = ProjectList.model_validate_json(txt, strict=True)
+display(res)

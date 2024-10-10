@@ -10,6 +10,7 @@ from rich import print
 import typing
 import enum
 from collections.abc import Generator
+import collections
 
 
 class Info(pydantic.BaseModel):
@@ -64,8 +65,12 @@ def get_status(proj: Project) -> Status:
 
 
 def display(res: ProjectList) -> Generator[None]:
+    stats = collections.Counter()
+    max_classifiers = collections.Counter()
     for proj in res.root:
         print(f"[bold]{proj.info.name}", end=" ")
+        status = get_status(proj)
+        stats.update([status])
         match get_status(proj):
             case Status.Wheel:
                 print("[green]Yes Wheels", end=" ")
@@ -76,12 +81,26 @@ def display(res: ProjectList) -> Generator[None]:
             case Status.NoClassifier:
                 classifiers = get_classifiers(proj)
                 print(f"[red]No ({classifiers[-1]})", end=" ")
+                max_classifiers.update([classifiers[-1]])
             case Status.Unknown:
                 pass
             case never:
                 typing.assert_never(never)
 
         print(f"[yellow]{proj.info.requires_python}")
+
+    print()
+    print("[bold]Totals:")
+    for status in Status:
+        print(f"  {status.name}: {stats.get(status)}")
+
+    print()
+    print("[bold]Max classifiers:")
+    for clsfr, total in sorted(
+        max_classifiers.items(), key=lambda v: [int(d) for d in v[0].split(".")],
+        reverse=True
+    ):
+        print(f"  {clsfr}: {total}")
 
 
 txt = Path("myproj.json").read_text()

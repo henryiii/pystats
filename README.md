@@ -48,7 +48,7 @@ Now you can use `compute_tool.py`/`compute_tools.py` to run queries over the dat
 Download the top packages list (monthly):
 
 ```bash
-wget https://hugovk.github.io/top-pypi-packages/top-pypi-packages-30-days.min.json
+wget https://hugovk.github.io/top-pypi-packages/top-pypi-packages.min.json
 ```
 
 ## Print counts

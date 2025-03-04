@@ -1,6 +1,6 @@
 import json
 
-with open("top-pypi-packages-30-days.min.json") as f:
+with open("top-pypi-packages.min.json") as f:
     j = json.load(f)
 
 projs = {l["project"]: (i, l["download_count"]) for i, l in enumerate(j["rows"])}

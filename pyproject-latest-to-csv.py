@@ -16,35 +16,58 @@ MIT licensed.
 
 import duckdb
 
-ALL_VERSIONS_QUERY = """SELECT project_name, COUNT(project_name) AS nb_uploads,
+ALL_VERSIONS_QUERY = """
+SELECT
+  project_name,
+  COUNT(project_name) AS nb_uploads,
   MAX(project_version) AS max_version, 
   LIST(DISTINCT project_version) AS all_versions,
   MAX(uploaded_on) AS max_uploaded_on, 
   LIST(DISTINCT uploaded_on) AS all_uploaded_on,
   LIST(DISTINCT repository) AS all_repository,
   LIST(DISTINCT path) AS all_path
-  FROM 'index-*.parquet'
-  WHERE (date_part('year', uploaded_on) >= '2018') AND regexp_matches(path, 'pyproject.toml$') AND skip_reason == ''
-  GROUP BY project_name;
+FROM (
+  SELECT DISTINCT *
+  FROM 'dataset-*.parquet'
+  WHERE (date_part('year', uploaded_on) >= '2018')
+    AND regexp_matches(path, 'pyproject.toml$')
+    AND skip_reason = ''
+  ) AS cleaned
+GROUP BY project_name;
 """
 
 res = duckdb.sql(ALL_VERSIONS_QUERY)
-res.to_csv("extract-pyproject-all-versions.csv", header=True)
+res.write_csv("extract-pyproject-all-versions.csv", header=True, quoting=True)
 
-LATEST_QUERY = """WITH lpv AS (SELECT project_name, COUNT(project_name) AS nb_uploads,
-  MAX(uploaded_on) AS max_uploaded_on, 
-  LIST(DISTINCT uploaded_on) AS all_uploaded_on
-  FROM 'index-*.parquet'
-  WHERE (date_part('year', uploaded_on) >= '2018') AND regexp_matches(path, 'pyproject.toml$') AND skip_reason == ''
-  GROUP BY project_name)
-SELECT ip.repository, ip.project_name, ip.project_version, lpv.nb_uploads, 
-  ip.uploaded_on, date_part('year', ip.uploaded_on) AS year, ip.path
-  FROM 'index-*.parquet' as ip
-    JOIN lpv ON ip.project_name=lpv.project_name AND ip.uploaded_on=lpv.max_uploaded_on
-  WHERE regexp_matches(path, 'pyproject.toml$') AND skip_reason == '';
+LATEST_QUERY = """
+WITH lpv AS (
+  SELECT project_name,
+         COUNT(project_name) AS nb_uploads,
+         MAX(uploaded_on) AS max_uploaded_on,
+         LIST(DISTINCT uploaded_on) AS all_uploaded_on
+  FROM 'dataset-*.parquet'
+  WHERE date_part('year', uploaded_on) >= 2018
+    AND regexp_matches(path, 'pyproject.toml$')
+    AND skip_reason = ''
+  GROUP BY project_name
+)
+SELECT DISTINCT
+  ip.repository,
+  ip.project_name,
+  ip.project_version,
+  lpv.nb_uploads,
+  ip.uploaded_on,
+  date_part('year', ip.uploaded_on) AS year,
+  ip.path
+FROM 'dataset-*.parquet' AS ip
+JOIN lpv
+  ON ip.project_name = lpv.project_name
+ AND ip.uploaded_on = lpv.max_uploaded_on
+WHERE regexp_matches(ip.path, 'pyproject.toml$')
+  AND ip.skip_reason = '';
 """
 
 # res = duckdb.sql(LATEST_QUERY).show()
 
 res = duckdb.sql(LATEST_QUERY)
-res.to_csv("extract-pyproject-latest.csv", header=True)
+res.write_csv("extract-pyproject-latest.csv", header=True, quoting=True)

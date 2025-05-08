@@ -23,7 +23,7 @@ ALL_VERSIONS_QUERY = """SELECT project_name, COUNT(project_name) AS nb_uploads,
   LIST(DISTINCT uploaded_on) AS all_uploaded_on,
   LIST(DISTINCT repository) AS all_repository,
   LIST(DISTINCT path) AS all_path
-  FROM 'index-*.parquet'
+  FROM 'dataset-*.parquet'
   WHERE (date_part('year', uploaded_on) >= '2018') AND regexp_matches(path, 'CMakeLists.txt$') AND skip_reason == ''
   GROUP BY project_name;
 """
@@ -34,12 +34,12 @@ res.to_csv("extract-cmakelists-all-versions.csv", header=True)
 LATEST_QUERY = """WITH lpv AS (SELECT project_name, COUNT(project_name) AS nb_uploads,
   MAX(uploaded_on) AS max_uploaded_on, 
   LIST(DISTINCT uploaded_on) AS all_uploaded_on
-  FROM 'index-*.parquet'
+  FROM 'dataset-*.parquet'
   WHERE (date_part('year', uploaded_on) >= '2018') AND regexp_matches(path, 'CMakeLists.txt$') AND skip_reason == ''
   GROUP BY project_name)
 SELECT ip.repository, ip.project_name, ip.project_version, lpv.nb_uploads, 
   ip.uploaded_on, date_part('year', ip.uploaded_on) AS year, ip.path
-  FROM 'index-*.parquet' as ip
+  FROM 'dataset-*.parquet' as ip
     JOIN lpv ON ip.project_name=lpv.project_name AND ip.uploaded_on=lpv.max_uploaded_on
   WHERE regexp_matches(path, 'CMakeLists.txt$') AND skip_reason == '';
 """

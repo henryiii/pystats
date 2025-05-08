@@ -98,8 +98,9 @@ def display(res: ProjectList) -> Generator[None]:
     print()
     print("[bold]Max classifiers:")
     for clsfr, total in sorted(
-        max_classifiers.items(), key=lambda v: [int(d) for d in v[0].split(".")],
-        reverse=True
+        max_classifiers.items(),
+        key=lambda v: [int(d) for d in v[0].split(".")],
+        reverse=True,
     ):
         print(f"  {clsfr}: {total}")
 

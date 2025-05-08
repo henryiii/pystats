@@ -94,14 +94,20 @@ async def worker(
                 continue
 
             with cursor.connection:
-                cursor.execute(
-                    INSERT_CONTENTS,
-                    {
-                        "project_name": line["project_name"],
-                        "project_version": line["project_version"],
-                        "contents": data,
-                    },
-                )
+                try:
+                    cursor.execute(
+                        INSERT_CONTENTS,
+                        {
+                            "project_name": line["project_name"],
+                            "project_version": line["project_version"],
+                            "contents": data,
+                        },
+                    )
+                except Exception as e:
+                    e.add_note(
+                        f"{thread}:{i} {line['project_name']}=={line['project_version']} failed"
+                    )
+                    raise
 
 
 async def main() -> None:

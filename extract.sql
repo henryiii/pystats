@@ -13,7 +13,7 @@ WITH latest_dates AS (
     lpv.download_count, COUNT(*) AS file_count,
     ROW_NUMBER() OVER (PARTITION BY lpv.project_name ORDER BY MAX(ip.uploaded_on) DESC) AS row_num
   FROM
-    'index-*.parquet' as ip
+    'dataset-*.parquet' as ip
   JOIN
     lpv ON (LOWER(REPLACE(REPLACE(ip.project_name, '_', '-'), '.', '-')))=lpv.project_name
   WHERE

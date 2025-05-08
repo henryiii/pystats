@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# /// script
+# dependencies = ["packaging"]
+# ///
+
 import contextlib
 import pickle
 import sqlite3

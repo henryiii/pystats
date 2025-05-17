@@ -2,6 +2,7 @@
 
 import argparse
 import pickle
+import sys
 from collections import Counter
 from collections.abc import Generator
 from pathlib import Path
@@ -14,6 +15,7 @@ class Contents(enum.Enum):
     Reprs = enum.auto()
     Lengths = enum.auto()
     Lines = enum.auto()
+    Any = enum.auto()
 
 
 def dig(value: Any, key: str, *keys: str) -> Any:
@@ -48,6 +50,8 @@ def main(tool: str, get_contents: Contents, level: int = 0) -> None:
                 print(f"{tool} lines:")
             case Contents.Values:
                 print(tool + ".*" * (level + 1) + ":")
+            case Contents.Any:
+                print(f"{tool}:")
     else:
         if get_contents != Contents.Values:
             raise AssertionError("Can't get contents with no section")
@@ -63,6 +67,8 @@ def main(tool: str, get_contents: Contents, level: int = 0) -> None:
         match item, get_contents:
             case None | "", _:
                 pass
+            case _, Contents.Any:
+                counter[tool] += 1
             case _, Contents.Values:
                 counter += Counter(all_keys(item, level=level))
             case list(), Contents.Reprs:
@@ -92,12 +98,17 @@ def blame(tool: str, string: str, contents: Contents) -> None:
         print(tool, "=", string, "chars")
     elif string and contents == Contents.Lines:
         print(tool, "=", string, "lines")
+    elif contents == Contents.Any:
+        print("Projects with", tool, file=sys.stderr)
     else:
         print(tool, "= ...")
 
     for name, version, toml in get_tomls_cached("pyproject_contents.db"):
         item = dig(toml, *tool.split(".")) if tool else toml
-        if not string and item:
+        if contents == Contents.Any:
+            if item:
+                print(name)
+        elif not string and item:
             print(name, version, "=", repr(item))
         elif contents == Contents.Lengths and len(item) == int(string):
             print(name, version)

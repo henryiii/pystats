@@ -57,7 +57,7 @@ Produce package lists based on what you are interested, for example:
 
 ```console
 ./compute-tool.py build-system.build-backend -b "'hatchling.build'" -c Reprs > hatchling_proj.txt
-./compute-tool.py build-system.build-backend -b "'scikit_build_core.build'" -c Reprs > scikit-build-core.txt
+./compute-tool.py build-system.build-backend -b "'scikit_build_core.build'" -c Reprs > scikit-build-core_proj.txt
 ./compute-tool.py build-system.build-backend -b "'mesonpy'" -c Reprs > meson_proj.txt
 ./compute-tool.py build-system.build-backend -b "'maturin'" -c Reprs > maturin_proj.txt
 ```
@@ -73,3 +73,12 @@ duckdb < extract.sql
 ```
 
 This will produce `'extract-filecount-latest.csv'`.
+
+
+## Plotting ghforks
+
+To get the releases, use:
+
+```bash
+gh release list --json tagName,publishedAt > skbuild_releases.json
+```

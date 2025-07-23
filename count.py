@@ -1,6 +1,6 @@
 import json
 
-with open("top-pypi-packages-2025-05.min.json") as f:
+with open("top-pypi-packages.min.json") as f:
     j = json.load(f)
 
 projs = {
@@ -64,7 +64,7 @@ for p in myp:
 print(f"Total monthly downloads: {sum(x[1] for x in myp.values()) // 1000000:}M")
 
 
-for item in ["skbuild", "meson", "maturin", "hatchling"]:
+for item in ["scikit-build-core", "meson", "maturin", "hatchling"]:
     with open(f"{item}_proj.txt") as f:
         pkgs = [x.split()[0].lower().replace(".", "-").replace("_", "-") for x in f][1:]
 
